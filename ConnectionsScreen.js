@@ -29,8 +29,11 @@ import MPDConnection from './MPDConnection';
 import UPnPManager from './UPnPManager';
 import IonIcon  from 'react-native-vector-icons/Ionicons';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import { Input, Button } from 'react-native-elements'
-import ActionButton from 'react-native-action-button';
+//import { Input, Button } from 'react-native-elements'
+import { TextInput, Button  } from 'react-native-paper'
+//import ActionButton from 'react-native-action-button';
+import { FloatingAction } from "react-native-floating-action";
+
 import { SwipeListView, SwipeRow } from 'react-native-swipe-list-view';
 import Config from './Config';
 import { StyleManager } from './Styles';
@@ -84,7 +87,7 @@ class AddConnectionModal extends React.Component {
             return;
         }
 
-        this.props.addConnection(this.state.name, this.state.host, parsedPort, this.state.password);
+        this.props.addConnection(this.state.name, this.state.host, this.state.port, this.state.password);
         this.setState({
             name: "",
             host: "",
@@ -109,49 +112,52 @@ class AddConnectionModal extends React.Component {
                     <View style={styles.dialog2}>
                         <Text style={styles.dialogtext}>Add MPD Connection</Text>
                     </View>
-                    <Input label="Name" 
+                    <TextInput label="Name" 
                             autoCapitalize="none" 
                             onChangeText={(name) => this.setState({name})} 
-                            style={styles.entryField}
+                            //style={styles.entryField}
                             inputStyle={styles.label}
-                            labelStyle={styles.label}>
-                    </Input>
-                    <Input label="Host" 
+                            labelStyle={styles.label}
+                            >
+                    </TextInput>
+                    <TextInput label="Host" 
                             autoCapitalize="none" 
                             onChangeText={(host) => this.setState({host})} 
-                            style={styles.entryField}
+                            //style={styles.entryField}
                             inputStyle={styles.label}
                             labelStyle={styles.label}>
-                    </Input>
-                    <Input keyboardType='numeric' 
+                    </TextInput>
+                    <TextInput keyboardType='numeric' 
                             label="Port" 
                             onChangeText={(port) => this.setState({port})} 
-                            style={styles.entryField} 
+                            //style={styles.entryField} 
                             inputStyle={styles.label}
                             labelStyle={styles.label}>
-                    </Input>
-                    <Input secureTextEntry={true} 
+                    </TextInput>
+                    <TextInput secureTextEntry={true} 
                             label="Password (if required by MPD server)" 
                             onChangeText={(password) => this.setState({password})} 
-                            style={styles.entryField} 
+                            //style={styles.entryField} 
                             inputStyle={styles.label}
                             labelStyle={styles.label}>
-                    </Input>
+                    </TextInput>
                     <View style={styles.dialog3}>
                         <Button
                             onPress={() => {this.addConnection();}}
                             title="Add"
-                            icon={{name: 'plus', size: 15, type: 'font-awesome'}}
+                            //icon={{name: 'plus', size: 15, type: 'font-awesome'}}
+                            icon="check"
                             raised={true}
                             type="outline"
-                        />
+                        >Add</Button>
                         <Button
                             onPress={() => {this.onCancel();}}
                             title="Cancel"
-                            icon={{name: 'times-circle', size: 15, type: 'font-awesome'}}
+                            //icon={{name: 'times-circle', size: 15, type: 'font-awesome'}}
+                            icon="cancel"
                             raised={true}
                             type="outline"
-                        />
+                        >Cancel</Button>
                     </View>
                 </View>
             </Modal>
@@ -169,14 +175,17 @@ export default class ConnectionsScreen extends React.Component {
         discovered: [],
         configured: [],
         upnpServers: [],
-        selected: (new Map(): Map<string, boolean>),
+        selected: (new Map()),
         modalVisible: false,
         loading: false
     }
 
     componentDidMount() {
-        const { navigation } = this.props;
-        this.navigateOnConnect = navigation.getParam('navigateOnConnect', true);
+        console.log('ConnectionsScreen>>>', this.props)
+        const { navigation } = this.props !==undefined ? this.props.navigation : undefined;
+       
+        this.navigateOnConnect = navigation!==undefined ? navigation.navigateOnConnect || true : true;
+        console.log('navigateOnConnect: ',this.navigateOnConnect)
         this.onDiscover = MPDConnection.getEventEmitter().addListener(
             "OnDiscover",
             (discovered) => {
@@ -230,9 +239,9 @@ export default class ConnectionsScreen extends React.Component {
     }
 
     componentWillUnmount() {
-        this.onDisconnect.remove();
-        this.onDiscover.remove();
-        this.onUPnPServerDiscover.remove();
+        this.onDisconnect?.remove();
+        this.onDiscover?.remove();
+        this.onUPnPServerDiscover?.remove();
         if (this.onApperance) {
             this.onApperance.remove();
         }
@@ -300,7 +309,7 @@ export default class ConnectionsScreen extends React.Component {
 
                 if (this.navigateOnConnect) {
                     this.setState({loading: false});
-                    this.props.navigation.navigate('MainPage');
+                    this.props.navigation.navigate('Play', {urlcommand:''});
                 }
             },
             (err) => {
@@ -329,7 +338,7 @@ export default class ConnectionsScreen extends React.Component {
     }
 
     addConnection = (name, host, port, password) => {
-        MPDConnection.addConnection(name, host, port, password, false, 0)
+        MPDConnection.addConnection(name, host, parsedPort, password, false, 0)
             .then(() => {
                 MPDConnection.getConnectionList()
                     .then((connections) => {
@@ -417,6 +426,23 @@ export default class ConnectionsScreen extends React.Component {
         const common = StyleManager.getStyles("styles");
 
         const navigation = this.props.navigation;
+
+        const actions = [
+            {
+              text: "Rescan",
+              icon: <IonIcon name="ios-refresh" size={20} color="white"/>,
+              color: '#1abc9c',
+              name: "bt_rescan",
+              position: 1
+            },
+            {
+              text: "Add Connection",
+              icon: <Icon name="plus-square" size={15} color="#e6e6e6" />,
+              color: '#3498db',
+              name: "bt_add_connection",
+              position: 2
+            }
+          ];        
         return (
             <View style={common.container1}>
                 <AddConnectionModal visible={this.state.modalVisible} onCancel={() => {this.onCancel();}} addConnection={this.addConnection}></AddConnectionModal>
@@ -478,7 +504,18 @@ export default class ConnectionsScreen extends React.Component {
                         <ActivityIndicator size="large" color="#0000ff"/>
                     </View>
                 }
-
+                <FloatingAction
+                    actions={actions}
+                    color="rgba(231,76,60,1)" hideShadow={true}
+                    
+                    onPressItem={name => {
+                        if(name==="bt_rescan")
+                            this.onRescan()
+                        if(name==="bt_add_connection")
+                            this.onAdd()
+                    }}
+                />
+                {/* 
                 <ActionButton buttonColor="rgba(231,76,60,1)" hideShadow={true}>
                     <ActionButton.Item buttonColor='#1abc9c' title="Rescan" size={40} textStyle={common.actionButtonText} onPress={() => {this.onRescan();}}>
                         <IonIcon name="ios-refresh" size={20} color="white"/>
@@ -487,6 +524,7 @@ export default class ConnectionsScreen extends React.Component {
                         <Icon name="plus-square" size={15} color="#e6e6e6" />
                     </ActionButton.Item>
                 </ActionButton>
+                */}
             </View>
         );
     }

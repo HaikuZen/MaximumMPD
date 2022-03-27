@@ -21,8 +21,10 @@ import { SearchBar } from "react-native-elements";
 import Icon from 'react-native-vector-icons/Ionicons';
 import FAIcon from 'react-native-vector-icons/FontAwesome';
 import EntypoIcon from 'react-native-vector-icons/Entypo';
-import { HeaderBackButton } from 'react-navigation-stack';
-import ActionButton from 'react-native-action-button';
+import { HeaderBackButton } from '@react-navigation/native-stack';
+//import ActionButton from 'react-native-action-button';
+import { FloatingAction } from "react-native-floating-action";
+
 import { SwipeListView, SwipeRow } from 'react-native-swipe-list-view';
 
 import { StyleManager } from './Styles';
@@ -31,13 +33,13 @@ import UPnPManager from './UPnPManager';
 import AudioStreamManager from './AudioStreamManager';
 
 export default class UPnPBrowseScreen extends React.Component {
-    static navigationOptions = ({ navigation }) => {
-        const showBackbutton = navigation.getParam('showBackbutton', false);
+    static navigationOptions = ({ navigation, route }) => {
+        const showBackbutton = route.params?.showBackbutton || false
         let ret = {
             title: 'UPnP Browse'
         }
         if (showBackbutton) {
-            ret.headerLeft = () => ( <HeaderBackButton onPress={navigation.getParam('backlinkHandler')}/> )
+            ret.headerLeft = () => ( <HeaderBackButton onPress={route.params?.backlinkHandler}/> )
         }
         return ret;
     };
@@ -54,7 +56,7 @@ export default class UPnPBrowseScreen extends React.Component {
     }
 
     componentDidMount() {
-        this.props.navigation.setParams({ backlinkHandler: this.backlinkHandler });
+        this.props.navigation.setOptions({ backlinkHandler: this.backlinkHandler });
         this.load("0");
         this.didFocusSubscription = this.props.navigation.addListener(
             'didFocus',
@@ -67,7 +69,7 @@ export default class UPnPBrowseScreen extends React.Component {
     }
 
     componentWillUnmount() {
-        this.didFocusSubscription.remove();
+        this.didFocusSubscription?.remove();
     }
 
     backlinkHandler = () => {
@@ -112,7 +114,7 @@ export default class UPnPBrowseScreen extends React.Component {
         UPnPManager.browse(id)
         .then((items) => {
             const show = id === "0" ? false : true;
-            this.props.navigation.setParams({ showBackbutton: show });
+            this.props.navigation.setOptions({ showBackbutton: show });
             this.setState({loading: false, items: items, fullset: items});
         })
         .catch((err) => {
@@ -187,6 +189,15 @@ export default class UPnPBrowseScreen extends React.Component {
                             title += " ("+item.childCount+")";
                         }
                         if (item.isContainer === "TRUE") {
+                            const actions = [
+                                {
+                                  text: "Add to Queue",
+                                  icon: <FAIcon name="plus-square" size={15} color="#e6e6e6" />,
+                                  color: '#9b59b6',
+                                  name: "bt_add_to_queue",
+                                  position: 1
+                                }
+                              ];                              
                             return (
                                 <TouchableOpacity onPress={this.onPress.bind(this, item)} onLongPress={this.onLongPress.bind(this, item)}>
                                     <View style={common.container3}>
@@ -257,11 +268,21 @@ export default class UPnPBrowseScreen extends React.Component {
                         <ActivityIndicator size="large" color="#0000ff"/>
                     </View>
                 }
+                <FloatingAction
+                    actions={actions}
+                    color="rgba(231,76,60,1)" hideShadow={true}
+                    onPressItem={name => {
+                        if(name==="bt_add_to_queue")
+                            this.addAll()
+                    }}
+                />                
+                {/*
                 <ActionButton buttonColor="rgba(231,76,60,1)" hideShadow={true}>
                     <ActionButton.Item buttonColor='#9b59b6' title="Add to Queue" size={40} textStyle={common.actionButtonText} onPress={() => {this.addAll();}}>
                         <FAIcon name="plus-square" size={15} color="#e6e6e6" />
                     </ActionButton.Item>
                 </ActionButton>
+                */}
             </View>
         );
     }

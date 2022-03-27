@@ -20,7 +20,7 @@ import { View, Modal, Text, Alert, Linking, Appearance, NativeModules, ActionShe
 import {Picker} from '@react-native-picker/picker';
 import SettingsList from 'react-native-settings-list';
 import { Input, Button } from 'react-native-elements'
-import { ActionSheetCustom as ActionSheet } from 'react-native-actionsheet';
+import ActionSheet from '@alessiocancian/react-native-actionsheet';
 
 import MPDConnection from './MPDConnection';
 import Config from './Config';
@@ -330,9 +330,9 @@ export default class SettingsScreen extends React.Component {
     }
 
     componentWillUnmount() {
-        this.onConnect.remove();
-        this.onDisconnect.remove();
-        this.didFocusSubscription.remove();
+        this.onConnect?.remove();
+        this.onDisconnect?.remove();
+        this.didFocusSubscription?.remove();
         if (this.onApperance) {
             this.onApperance.remove();
         }

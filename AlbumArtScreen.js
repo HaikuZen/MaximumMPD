@@ -20,9 +20,11 @@ import { View, Text, Alert, ActivityIndicator, FlatList, ScrollView, Modal, Touc
 import { SearchBar, Input, Button } from "react-native-elements";
 import Icon from 'react-native-vector-icons/Ionicons';
 import SettingsList from 'react-native-settings-list';
-import ActionButton from 'react-native-action-button';
+//import ActionButton from 'react-native-action-button';
+import { FloatingAction } from "react-native-floating-action";
+
 import FAIcon from 'react-native-vector-icons/FontAwesome';
-import { ActionSheetCustom as ActionSheet } from 'react-native-actionsheet'
+import ActionSheet from '@alessiocancian/react-native-actionsheet';
 
 import AlbumArt from './AlbumArt';
 import MPDConnection from './MPDConnection';
@@ -199,7 +201,7 @@ class SelectUPnPModal extends React.Component {
     }
 
     componentWillUnmount() {
-        this.onUPnPServerDiscover.remove();
+        this.onUPnPServerDiscover?.remove();
     }
 
     load() {
@@ -413,11 +415,11 @@ export default class AlbumArtScreen extends React.Component {
     }
 
     componentWillUnmount() {
-        this.onAlbumArtStart.remove();
-        this.OnAlbumArtStatus.remove();
-        this.onAlbumArtEnd.remove();
-        this.onAlbumArtError.remove();
-        this.onAlbumArtComplete.remove();
+        this.onAlbumArtStart?.remove();
+        this.OnAlbumArtStatus?.remove();
+        this.onAlbumArtEnd?.remove();
+        this.onAlbumArtError?.remove();
+        this.onAlbumArtComplete?.remove();
     }
 
     clearAlbumArt() {
@@ -605,6 +607,29 @@ export default class AlbumArtScreen extends React.Component {
         }
         const showFilenamePrompt = this.state.serverType === "HTTP" && !this.state.searchForImageFile;
         const showUseAsURL = this.state.serverType === "HTTP" && this.state.searchForImageFile;
+        const actions = [
+            {
+              text: "Clear",
+              icon: <FAIcon name="eraser" size={15} color="#e6e6e6" />,
+              color: '#1abc9c',
+              name: "bt_clear",
+              position: 1
+            },
+            {
+              text: "Missing",
+              icon: <FAIcon name="exclamation-circle" size={15} color="#e6e6e6" />,
+              color: '#3498db',
+              name: "bt_missing",
+              position: 2
+            },
+            {
+                text: "Retry",
+                icon: <FAIcon name="exclamation-circle" size={15} color="#e6e6e6" />,
+                color: '#9b59b6',
+                name: "bt_retry",
+                position: 3
+            }            
+          ];          
         return (
             <View style={styles.container}>
                 <ScrollView style={styles.scrollview}>
@@ -758,6 +783,19 @@ export default class AlbumArtScreen extends React.Component {
                         }}
                     />
                 }
+                <FloatingAction
+                    actions={actions}
+                    color="rgba(231,76,60,1)" hideShadow={true}
+                    onPressItem={name => {
+                        if(name==="bt_clear")
+                            this.setState({missingVisible: true})
+                        if(name==="bt_missing")
+                            this.onAdd()
+                        if(name==="bt_retry")
+                            this.retryMissing()
+                    }}
+                />                
+                {/*
                 <ActionButton buttonColor="rgba(231,76,60,1)" hideShadow={true}>
                     <ActionButton.Item buttonColor='#1abc9c' title="Clear" size={40} textStyle={common.actionButtonText} onPress={() => {this.clearAlbumArt();}}>
                         <FAIcon name="eraser" size={15} color="#e6e6e6" />
@@ -769,6 +807,7 @@ export default class AlbumArtScreen extends React.Component {
                         <FAIcon name="exclamation-circle" size={15} color="#e6e6e6" />
                     </ActionButton.Item>
                 </ActionButton>
+                 */}
             </View>
         );
     }

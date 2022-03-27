@@ -20,8 +20,9 @@ import { Text, View, FlatList, TouchableOpacity, ActivityIndicator, Alert, Modal
 import {Picker} from '@react-native-picker/picker';
 import { Input, Button } from 'react-native-elements'
 
-import ActionButton from 'react-native-action-button';
-import { ActionSheetCustom as ActionSheet } from 'react-native-actionsheet';
+//import ActionButton from 'react-native-action-button';
+import { FloatingAction } from "react-native-floating-action";
+import ActionSheet from '@alessiocancian/react-native-actionsheet';
 
 import Icon from 'react-native-vector-icons/Ionicons';
 import FAIcon from 'react-native-vector-icons/FontAwesome';
@@ -109,7 +110,7 @@ export default class PlaylistScreen extends React.Component {
         this.state = {
           playlist: [],
           status: undefined,
-          selected: (new Map(): Map<string, boolean>),
+          selected: (new Map()),
           loading: false,
           isPlaying: false,
           currentSongId: -1,
@@ -155,8 +156,8 @@ export default class PlaylistScreen extends React.Component {
     }
 
     componentWillUnmount() {
-        this.didFocusSubscription.remove();
-        this.onStatus.remove();
+        this.didFocusSubscription?.remove();
+        this.onStatus?.remove();
     }
 
     onPrevious() {
@@ -466,6 +467,50 @@ export default class PlaylistScreen extends React.Component {
         }
         const playPauseIcon = this.state.isPlaying == true ? "pause" : "play";
         const playPauseLabel = this.state.isPlaying == true ? "Pause" : "Play";
+        const actions = [
+            {
+              text: "Random Playlist",
+              icon: <FAIcon name="random" size={15} color="#e6e6e6" />,
+              color: '#3498db',
+              name: "bt_random",
+              position: 1
+            },
+            {
+              text: "Clear Queue",
+              icon: <FAIcon name="eraser" size={15} color="#e6e6e6" />,
+              color: '#1abc9c',
+              name: "bt_clear",
+              position: 2
+            },
+            {
+              text: "Previous",
+              icon: <FAIcon name="fast-backward" size={15} color="#e6e6e6" />,
+              color: '#9b59b6',
+              name: "bt_previous",
+              position: 3
+            },
+            {
+              text: "Stop",
+              icon: <FAIcon name="stop" size={12} color="#e6e6e6" />,
+              color: '#3498db',
+              name: "bt_stop",
+              position: 4
+            },
+            {
+              text: "Play/Pause",
+              icon: <FAIcon name={playPauseIcon} size={15} color="#e6e6e6" />,
+              color: '#1abc9c',
+              name: "bt_play_pause",
+              position: 5
+            },
+            {
+              text: "Next",
+              icon: <FAIcon name="fast-forward" size={15} color="#e6e6e6" />,
+              color: '#9b59b6',
+              name: "bt_next",
+              position: 6
+            }
+          ];         
         return (
             <View style={styles.container1}>
                 <View style={styles.container2}>
@@ -502,6 +547,26 @@ export default class PlaylistScreen extends React.Component {
                         }}
                     />
                 }
+                <FloatingAction
+                    actions={actions}
+                    color="rgba(231,76,60,1)" hideShadow={true}
+                    onPressItem={name => {
+                        if(name==="bt_random")
+                            this.doRandom()
+                        if(name==="bt_clear")
+                            this.onClear.bind(this)
+                        if(name==="bt_previous")
+                            this.onPrevious.bind(this)
+                        if(name==="bt_stop")
+                            this.onStop.bind(this)
+                        if(name==="bt_play_pause")
+                            this.onPlayPause.bind(this)
+                        if(name==="bt_next")
+                            this.onNext.bind(this)
+                        
+                    }}
+                />
+                {/*
                 <ActionButton buttonColor="rgba(231,76,60,1)" hideShadow={true}>
                     <ActionButton.Item size={actionButtonSize} buttonColor='#3498db' title="Random Playlist" textStyle={common.actionButtonText} onPress={() => this.doRandom()}>
                         <FAIcon name="random" size={15} color="#e6e6e6" />
@@ -522,6 +587,7 @@ export default class PlaylistScreen extends React.Component {
                         <FAIcon name="fast-forward" size={15} color="#e6e6e6" />
                     </ActionButton.Item>
                 </ActionButton>
+                 */}
                 <RandomPlaylistTypeModal visible={this.state.modalVisible} setRandomPlaylistType={(type, value) => {this.onRandom(type, value)}} onCancel={() => this.setState({modalVisible: false})}></RandomPlaylistTypeModal>
             </View>
         );

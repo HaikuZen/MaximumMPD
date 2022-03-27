@@ -46,6 +46,15 @@ public class VolumeControlModule extends ReactContextBaseJavaModule implements A
         super(reactContext);
     }
 
+    // Required for rn built in EventEmitter Calls.
+    @ReactMethod
+    public void addListener(String eventName) {
+    }
+
+    @ReactMethod
+    public void removeListeners(Integer count) {
+    }
+
     @Override
     public String getName() {
         return "VolumeControl";

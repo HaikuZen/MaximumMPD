@@ -16,16 +16,37 @@
 */
 
 import React from 'react';
-import { ActivityIndicator, View, TouchableOpacity, Appearance, useColorScheme, SafeAreaView } from 'react-native';
+import { 
+    ActivityIndicator, 
+    View, 
+    TouchableOpacity, 
+    Appearance, 
+    useColorScheme, 
+   // DefaultTheme,
+    DarkTheme,    
+    SafeAreaView,
+    useWindowDimensions 
+} from 'react-native';
+import { DefaultTheme, Provider as PaperProvider} from 'react-native-paper';
+
 import Icon  from 'react-native-vector-icons/Ionicons';
 import FAIcon  from 'react-native-vector-icons/FontAwesome';
 import MaterialIcon from 'react-native-vector-icons/dist/MaterialIcons';
+import { NavigationContainer, useNavigationContainerRef, useTheme } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+//import { createStackNavigator } from '@react-navigation/stack';
+import { createDrawerNavigator } from '@react-navigation/drawer';
+import { getHeaderTitle } from '@react-navigation/elements';
 
-import { createStackNavigator } from 'react-navigation-stack';
-import { createBottomTabNavigator } from 'react-navigation-tabs';
-import { createAppContainer, createSwitchNavigator } from 'react-navigation';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
+
+//import { createAppContainer } from '@react-navigation/native';
 
 import { StyleManager } from './Styles';
+
+import PlaylistScreen from './PlaylistScreen';
+import PlaylistEditor from './PlaylistEditor';
 
 import PlayScreen from './PlayScreen';
 import SearchScreen from './SearchScreen';
@@ -35,7 +56,7 @@ import ConnectionsScreen from './ConnectionsScreen';
 import ArtistsScreen from './ArtistsScreen';
 import AlbumsScreen from './AlbumsScreen';
 import SongsScreen from './SongsScreen';
-import PlaylistDetails from './PlaylistDetails';
+//import PlaylistDetails from './PlaylistDetails';
 import WelcomeScreen from './WelcomeScreen';
 import OutputsScreen from './OutputsScreen';
 import DebugScreen from './DebugScreen';
@@ -79,9 +100,9 @@ class Header extends React.Component {
     }
 
     componentWillUnmount() {
-        this.onConnect.remove();
-        this.onConnecting.remove();
-        this.onDisconnect.remove();
+        this.onConnect?.remove();
+        this.onConnecting?.remove();
+        this.onDisconnect?.remove();
         if (this.onApperance) {
             this.onApperance.remove();
         }
@@ -127,7 +148,7 @@ class SortHeader extends React.Component {
         const { navigation } = this.props;
         return (
             <View>
-                <TouchableOpacity onPress={navigation.getParam('sort')}>
+                <TouchableOpacity onPress={this.props.route.params?.sort}>
                     <MaterialIcon name="sort" size={20} color="gray" style={styles.paddingRight}/>
                 </TouchableOpacity>
             </View>
@@ -135,6 +156,11 @@ class SortHeader extends React.Component {
     }
 }
 
+const Stack = createNativeStackNavigator();
+const Tab = createBottomTabNavigator();
+const Drawer = createDrawerNavigator();
+const TopTab = createMaterialTopTabNavigator();
+/*
 const PlayStack = createStackNavigator(
     {
         Play: { 
@@ -158,7 +184,24 @@ const PlayStack = createStackNavigator(
         })
     }
 );
+*/
 
+function PlayPage(navigationRef) {
+    return (
+        <TopTab.Navigator
+            screenOptions={{
+                headerBackTitle: null,
+                headerStyle: StyleManager.getStyles("appStyles").headerStyle,
+                headerTitleStyle: StyleManager.getStyles("appStyles").headerTitleStyle
+            }}        
+        >
+            <TopTab.Screen name="Player" component={PlayScreen} props={navigationRef} />
+            <TopTab.Screen name="Queue" component={PlaylistScreen} props={navigationRef} />
+            <TopTab.Screen name="Playlists" component={PlaylistEditor} props={navigationRef} />            
+        </TopTab.Navigator>
+    )
+}
+/*
 const BrowseStack = createStackNavigator(
     {
         Artists: { 
@@ -190,7 +233,25 @@ const BrowseStack = createStackNavigator(
         })
     }
 );
+*/
 
+function BrowseStack(navigationRef) {
+    return (
+        <Stack.Navigator
+            screenOptions={{
+                headerBackTitle: null,
+                headerStyle: StyleManager.getStyles("appStyles").headerStyle,
+                headerTitleStyle: StyleManager.getStyles("appStyles").headerTitleStyle
+            }}        
+        >
+            <Stack.Screen name="Artists" component={ArtistsScreen} props={navigationRef} options={{ headerShown: false }} />
+            <Stack.Screen name="Albums" component={AlbumsScreen} props={navigationRef} options={{ headerShown: false }}/>            
+            <Stack.Screen name="Songs" component={SongsScreen} props={navigationRef} options={{ headerShown: false }} />            
+        </Stack.Navigator>
+    )
+}
+
+/*
 const SearchStack = createStackNavigator(
     {
         Search: { 
@@ -222,7 +283,25 @@ const SearchStack = createStackNavigator(
         })
     }
 );
+*/
 
+function SearchStack(navigationRef) {
+    return (
+        <Stack.Navigator
+            screenOptions={{
+                headerBackTitle: null,
+                headerStyle: StyleManager.getStyles("appStyles").headerStyle,
+                headerTitleStyle: StyleManager.getStyles("appStyles").headerTitleStyle
+            }}        
+        >
+            <Stack.Screen name="SearchMPD" component={SearchScreen} props={navigationRef} options={{ headerShown: false }} />
+            <Stack.Screen name="Albums" component={AlbumsScreen} props={navigationRef} options={{ headerShown: false }} />
+            <Stack.Screen name="Songs" component={SongsScreen} props={navigationRef} options={{ headerShown: false }} />            
+        </Stack.Navigator>
+    )
+}
+
+/*
 const FilesStack = createStackNavigator(
     {
         Files: { 
@@ -238,7 +317,24 @@ const FilesStack = createStackNavigator(
         }
     }
 );
+*/
 
+function FilesStack(navigationRef ) {
+    return (
+        <Stack.Navigator
+            screenOptions={{
+                headerBackTitle: null,
+                headerStyle: StyleManager.getStyles("appStyles").headerStyle,
+                headerTitleStyle: StyleManager.getStyles("appStyles").headerTitleStyle
+            }}        
+        >
+            <Stack.Screen name="File" component={FilesScreen} props={navigationRef} options={{ headerShown: false }} />
+            <Stack.Screen name="Connections" component={ConnectionsScreen} props={navigationRef} options={{ headerShown: false }} />
+        </Stack.Navigator>
+    )
+}
+
+/*
 const SettingsStack = createStackNavigator(
     {
         Settings: { 
@@ -268,7 +364,27 @@ const SettingsStack = createStackNavigator(
         })
     }
 );
+*/
 
+function SettingsStack(navigationRef) {
+    return (
+        <Stack.Navigator
+            screenOptions={{
+                headerBackTitle: null,
+                headerStyle: StyleManager.getStyles("appStyles").headerStyle,
+                headerTitleStyle: StyleManager.getStyles("appStyles").headerTitleStyle
+            }}        
+        >
+            <Stack.Screen name="SettingsScreen" component={SettingsScreen} props={navigationRef}  options={{ headerShown: false }}/>
+            <Stack.Screen name="Connections" component={ConnectionsScreen} props={navigationRef}  options={{ headerShown: false }}/>
+            <Stack.Screen name="Outputs" component={OutputsScreen} props={navigationRef}  options={{ headerShown: false }}/>
+            <Stack.Screen name="Debug" component={DebugScreen} props={navigationRef}  options={{ headerShown: false }}/>
+            <Stack.Screen name="AlbumArt" component={AlbumArtScreen} props={navigationRef}  options={{ headerShown: false }}/>
+        </Stack.Navigator>
+    )
+}
+
+/*
 const MainPage = createBottomTabNavigator(
   {
     Play: { screen: PlayStack },
@@ -317,7 +433,77 @@ const MainPage = createBottomTabNavigator(
     swipeEnabled: false
   }
 );
-
+*/
+/*
+function MainPage(navigationRef) {
+    return (
+        <Tab.Navigator        
+            screenOptions={{
+                tabBarActiveTintColor: 'red',
+                tabBarInactiveTintColor: 'gray',
+                style: StyleManager.getStyles("appStyles").tabBar
+            }}
+        >
+            <Tab.Screen 
+                name="Play" 
+                component={PlayPage} 
+                options={{
+                    tabBarLabel: 'Play',
+                    tabBarIcon: ({ color, size }) => (
+                    <Icon name='ios-musical-notes' size={25} color={color} />
+                    ),
+                }}
+                props={navigationRef}
+            />
+            <Tab.Screen 
+                name="Browse" 
+                component={BrowseStack} 
+                options={{
+                    tabBarLabel: 'BrowseStack',
+                    tabBarIcon: ({ color, size }) => (
+                    <Icon name='ios-list' size={25} color={color} />
+                    ),
+                }}
+                props={navigationRef}
+            />
+            <Tab.Screen 
+                name="Search" 
+                component={SearchStack} 
+                options={{
+                    tabBarLabel: 'SearchStack',
+                    tabBarIcon: ({ color, size }) => (
+                    <Icon name='ios-search' size={25} color={color} />
+                    ),
+                }}
+                props={navigationRef}
+            />
+            <Tab.Screen 
+                name="Files" 
+                component={FilesStack} 
+                options={{
+                    tabBarLabel: 'FilesStack',
+                    tabBarIcon: ({ color, size }) => (
+                    <Icon name='ios-folder' size={25} color={color} />
+                    ),
+                }}
+                props={navigationRef}
+            />
+            <Tab.Screen 
+                name="Settings" 
+                component={SettingsStack} 
+                options={{
+                    tabBarLabel: 'SettingsStack',
+                    tabBarIcon: ({ color, size }) => (
+                    <Icon name='ios-settings' size={25} color={color} />
+                    ),
+                }}
+                props={navigationRef}
+            />            
+        </Tab.Navigator>
+    )
+}
+*/
+/*
 const UPnPBrowseStack = createStackNavigator(
     {
         UPnPBrowse: { 
@@ -333,7 +519,23 @@ const UPnPBrowseStack = createStackNavigator(
         }
     }
 );
+*/
 
+function UPnPBrowseStack() {
+    return (
+        <Stack.Navigator
+            screenOptions={{
+                headerBackTitle: null,
+                headerStyle: StyleManager.getStyles("appStyles").headerStyle,
+                headerTitleStyle: StyleManager.getStyles("appStyles").headerTitleStyle
+            }}        
+        >
+            <Stack.Screen name="UPnPBrowse" component={UPnPBrowseScreen} />
+        </Stack.Navigator>
+    )
+}
+
+/*
 const UPnPRenderersStack = createStackNavigator(
     {
         UPnPRenderers: { 
@@ -349,7 +551,23 @@ const UPnPRenderersStack = createStackNavigator(
         }
     }
 );
+*/
 
+function UPnPRenderersStack() {
+    return (
+        <Stack.Navigator
+            screenOptions={{
+                headerBackTitle: null,
+                headerStyle: StyleManager.getStyles("appStyles").headerStyle,
+                headerTitleStyle: StyleManager.getStyles("appStyles").headerTitleStyle
+            }}        
+        >
+            <Stack.Screen name="UPnPRenderers" component={UPnPRenderersScreen} />
+        </Stack.Navigator>
+    )
+}
+
+/*
 const UPnPSettingsStack = createStackNavigator(
     {
         Connections: { 
@@ -367,7 +585,23 @@ const UPnPSettingsStack = createStackNavigator(
         })
     }
 );
+*/
 
+function UPnPSettingsStack() {
+    return (
+        <Stack.Navigator
+            screenOptions={{
+                headerBackTitle: null,
+                headerStyle: StyleManager.getStyles("appStyles").headerStyle,
+                headerTitleStyle: StyleManager.getStyles("appStyles").headerTitleStyle
+            }}        
+        >
+            <Stack.Screen name="Connection" component={ConnectionsScreen} />
+        </Stack.Navigator>
+    )
+}
+
+/*
 const StreamPlayStack = createStackNavigator(
     {
         Play: { 
@@ -385,8 +619,24 @@ const StreamPlayStack = createStackNavigator(
         })
     }
 );
+*/
 
 
+function StreamPlayStack() {
+    return (
+        <Stack.Navigator
+            screenOptions={{
+                headerBackTitle: null,
+                headerStyle: StyleManager.getStyles("appStyles").headerStyle,
+                headerTitleStyle: StyleManager.getStyles("appStyles").headerTitleStyle
+            }}        
+        >
+            <Stack.Screen name="Stream" component={StreamPlayScreen} />
+        </Stack.Navigator>
+    )
+}
+
+/*
 const UPnPPage = createBottomTabNavigator(
     {
       Play: { screen: StreamPlayStack },
@@ -425,27 +675,175 @@ const UPnPPage = createBottomTabNavigator(
       swipeEnabled: false
     }
 );
-  
+*/
 
-const SwitchPage = createSwitchNavigator(
-    {
-        WelcomeScreen: { screen: WelcomeScreen },
-        MainPage: { screen: MainPage },
-        UPnPPage: { screen: UPnPPage }
-    },
-    {
-        initialRouteName: 'WelcomeScreen'
-    }
-);
+function UPnPPage() {
+    return (
+        <Tab.Navigator
+            screenOptions={{
+                headerShown: false,
+                tabBarActiveTintColor: 'red',
+                tabBarInactiveTintColor: 'gray',
+                style: StyleManager.getStyles("appStyles").tabBar
+          }}
+        >
+        <Tab.Screen 
+            name="Play" 
+            component={StreamPlayScreen}             
+            options={{
+                tabBarLabel: 'Play',
+                tabBarIcon: ({ color, size }) => (
+                <Icon name='ios-musical-notes' size={25} color={color} />
+                ),
+              }}
+        />
+        <Tab.Screen 
+            name="Browse" 
+            component={UPnPBrowseScreen}
+            options={{
+                tabBarLabel: 'Browse',
+                tabBarIcon: ({ color, size }) => (
+                <Icon name='ios-list' size={25} color={color} />
+                ),
+              }}            
+        />
+        <Tab.Screen 
+            name="Render" 
+            component={UPnPRenderersScreen} 
+            options={{
+                tabBarLabel: 'Render',
+                tabBarIcon: ({ color, size }) => (
+                <Icon name='ios-headset' size={25} color={color} />
+                ),
+              }}                        
+            />
+        <Tab.Screen 
+            name="Settings" 
+            component={ConnectionsScreen} 
+            options={{
+                tabBarLabel: 'Settings',
+                tabBarIcon: ({ color, size }) => (
+                <Icon name='ios-settings' size={25} color={color} />
+                ),
+              }}             
+        />        
+      </Tab.Navigator>
+    )
+}
 
-let App = createAppContainer(SwitchPage);
 
-export default () => {
-    let theme = useColorScheme();
+function MyDrawer(navigationRef) {
+    const dimensions = useWindowDimensions();
+    const isLargeScreen = dimensions.width >= 768;  
     const styles = StyleManager.getStyles("appStyles");
     return (
+      <Drawer.Navigator 
+        initialRouteName="WelcomeScreen" 
+        drawerStyle={styles.container}
+        screenOptions={{
+            drawerType: isLargeScreen ? 'permanent' : 'slide',
+            drawerStyle: isLargeScreen ? null : { width: '50%' },
+            overlayColor: 'transparent',
+            headerBackTitle: null,           
+            headerStyle: StyleManager.getStyles("appStyles").headerStyle,
+            headerTitleStyle: StyleManager.getStyles("appStyles").headerTitleStyle
+          }}        
+      >
+        <Drawer.Screen 
+            name="Play" 
+            component={PlayPage} 
+            options={{
+                title: 'Play',
+                drawerIcon: ({ color, size }) => (
+                <Icon name='ios-musical-notes' size={15} color={color} />
+                ),
+            }}
+            props={navigationRef}
+        />
+        <Drawer.Screen 
+            name="Browse" 
+            component={BrowseStack} 
+            options={{
+                title: 'Browse',
+                drawerIcon: ({ color, size }) => (
+                <Icon name='ios-list' size={15} color={color} />
+                ),
+            }}
+            props={navigationRef}
+        />
+        <Drawer.Screen 
+            name="Search" 
+            component={SearchStack} 
+            options={{
+                title: 'Search',
+                drawerIcon: ({ color, size }) => (
+                <Icon name='ios-search' size={15} color={color} />
+                ),
+            }}
+            props={navigationRef}
+        />
+        <Drawer.Screen 
+            name="Files" 
+            component={FilesStack} 
+            options={{
+                title: 'Files',
+                drawerIcon: ({ color, size }) => (
+                <Icon name='ios-folder' size={15} color={color} />
+                ),
+            }}
+            props={navigationRef}
+        />
+        <Drawer.Screen 
+            name="UPnPPage" 
+            component={UPnPPage} 
+            options={{
+                title: 'UPnPPage',
+                drawerIcon: ({ color, size }) => (
+                <Icon name='ios-server' size={15} color={color} />
+                ),
+            }}            
+            props={navigationRef} 
+        />        
+        <Drawer.Screen 
+            name="Settings" 
+            component={SettingsStack} 
+            options={{
+                title: 'Settings',
+                drawerIcon: ({ color, size }) => (
+                <Icon name='ios-settings' size={15} color={color} />
+                ),
+            }}
+            props={navigationRef}
+        />
+        <Drawer.Screen 
+            name="WelcomeScreen" 
+            options={{
+                title:"Connections",
+                drawerIcon: ({ color, size }) => (
+                    <Icon name='ios-link' size={15} color={color} />
+                    ),
+            }}
+            component={WelcomeScreen} 
+            props={navigationRef} 
+        />
+
+      </Drawer.Navigator>
+    );
+}
+
+
+export default () => {
+    const theme = useColorScheme();
+    //console.log('(theme)>>>', theme)
+    const styles = StyleManager.getStyles("appStyles");
+    const navigationRef = useNavigationContainerRef();
+    return (
+        <PaperProvider >
         <SafeAreaView style={styles.container}>
-            <App theme={theme}/>
+            <NavigationContainer theme={theme === 'dark' ? DarkTheme : DefaultTheme}>
+                <MyDrawer {...navigationRef}/>
+            </NavigationContainer>
         </SafeAreaView>
+        </PaperProvider>
     )
 }

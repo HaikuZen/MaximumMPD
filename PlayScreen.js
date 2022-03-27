@@ -17,16 +17,14 @@
 
 import React from 'react';
 import { Text, View, TouchableOpacity, Image, Alert, Platform, Linking, ActivityIndicator, Appearance, ActionSheetIOS } from 'react-native';
-import { Slider, ButtonGroup } from 'react-native-elements'
+import { Slider } from 'react-native-elements'
 import Icon from 'react-native-vector-icons/FontAwesome';
 import EntypoIcon from 'react-native-vector-icons/Entypo';
 import HeaderButtons from 'react-navigation-header-buttons';
-import { ActionSheetCustom as ActionSheet } from 'react-native-actionsheet';
+import ActionSheet from '@alessiocancian/react-native-actionsheet';
 
 import { NativeEventEmitter, NativeModules, Dimensions } from 'react-native';
 
-import PlaylistScreen from './PlaylistScreen';
-import PlaylistEditor from './PlaylistEditor';
 import NewPlaylistModal from './NewPlaylistModal';
 
 import MPDConnection from './MPDConnection';
@@ -56,7 +54,7 @@ export default class PlayScreen extends React.Component {
     static navigationOptions = ({ navigation }) => {
         return {
             title: 'Play',
-            //headerLeft:  <HeaderPlaylist navigation={navigation}/>
+            headerLeft:  <HeaderPlaylist navigation={navigation}/>
         };
     };
 
@@ -86,19 +84,23 @@ export default class PlayScreen extends React.Component {
             "Height: "+height+" Width : "+width
         );
         */
-        const { navigation } = this.props;
-        if (!MPDConnection.isConnected()) {
+        console.log('PlayScreen>>>', this.props)
+        const { navigation } = this.props
+
+        if (!MPDConnection.isConnected()  && navigation) {
             navigation.navigate('Settings');
             navigation.navigate('Connections');
         }
-        this.navigateOnConnect = navigation.getParam('navigateOnConnect', true);
-        const urlCommand = navigation.getParam('urlCommand', "");
+        //this.navigateOnConnect = navigation.getParam('navigateOnConnect', true);
+        
+        let  urlCommand  = this.props.route.params?.urlCommand
         if (urlCommand !== "") {
             this.setState({urlCommand: urlCommand});
         }
         this.onStatus = MPDConnection.getEventEmitter().addListener(
             "OnStatus",
             (status) => {
+                //console.log('status>>>', status)
                 let currenttitle = "";
 
                 if (this.state.status) {
@@ -236,16 +238,16 @@ export default class PlayScreen extends React.Component {
     }
 
     componentWillUnmount() {
-        this.didBlurSubscription.remove();
-        this.didFocusSubscription.remove();
-        this.onStatus.remove();
-        this.onAlbumArtEnd.remove();
-        this.onAlbumArtComplete.remove();
-        this.onAlbumArtError.remove();
-        this.onVolumeChange.remove();
-        this.onDisconnect.remove();
-        this.onConnect.remove();
-        this.onInternalConnect.remove();
+        this.didBlurSubscription?.remove();
+        this.didFocusSubscription?.remove();
+        this.onStatus?.remove();
+        this.onAlbumArtEnd?.remove();
+        this.onAlbumArtComplete?.remove();
+        this.onAlbumArtError?.remove();
+        this.onVolumeChange?.remove();
+        this.onDisconnect?.remove();
+        this.onConnect?.remove();
+        this.onInternalConnect?.remove();
         if (this.onApperance) {
             this.onApperance.remove();
         }
@@ -458,22 +460,9 @@ export default class PlayScreen extends React.Component {
       const albumArtSize = Math.round((height/10) * 4) - padding;
       const title = currentsong.name !== undefined ? currentsong.name : currentsong.title
 
-      if (this.state.selectedTab === 0) {
           return (
               <View style={styles.container}>
                   <View style={styles.content}>
-                      <View style={{flex: bg, width: "100%", alignItems: 'stretch', justifyContent: 'center', padding: 5}}>
-                            <ButtonGroup
-                                onPress={(index) => {
-                                    this.setState({selectedTab:index});
-                                }}
-                                selectedIndex={this.state.selectedTab}
-                                buttons={['Playing', 'Queue', 'Playlists']}
-                                containerStyle={common.containerStyle}
-                                selectedButtonStyle={common.selectedButtonStyle}
-                                selectedTextStyle={common.selectedTextStyle}
-                                />
-                      </View>
                       <View style={styles.container2}>
                             <View style={common.container3}>
                               <Text style={styles.paddingRight}>{elapsed}</Text>
@@ -583,42 +572,6 @@ export default class PlayScreen extends React.Component {
                   }
               </View>
           );
-        } else if (this.state.selectedTab === 1) {
-            return (
-                <View style={styles.tabcontainer1}>
-                    <View style={{flex: bg, width: "100%", alignItems: 'stretch', justifyContent: 'center', padding: 5}}>
-                        <ButtonGroup
-                            onPress={(index) => {
-                                this.setState({selectedTab:index});
-                            }}
-                            selectedIndex={this.state.selectedTab}
-                            buttons={['Playing', 'Queue', 'Playlists']}
-                            containerStyle={common.containerStyle}
-                            selectedButtonStyle={common.selectedButtonStyle}
-                            selectedTextStyle={common.selectedTextStyle}
-                        />
-                    </View>
-                    <PlaylistScreen navigation={this.props.navigation}/>
-                </View>
-            );
-        } else {
-            return (
-                <View style={styles.tabcontainer1}>
-                    <View style={{flex: bg, width: "100%", alignItems: 'stretch', justifyContent: 'center', padding: 5}}>
-                        <ButtonGroup
-                            onPress={(index) => {
-                                this.setState({selectedTab:index});
-                            }}
-                            selectedIndex={this.state.selectedTab}
-                            buttons={['Playing', 'Queue', 'Playlists']}
-                            containerStyle={common.containerStyle}
-                            selectedButtonStyle={common.selectedButtonStyle}
-                            selectedTextStyle={common.selectedTextStyle}
-                        />
-                    </View>
-                    <PlaylistEditor navigation={this.props.navigation}/>
-                </View>
-            );
-        }
     }
+    
 }

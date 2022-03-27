@@ -108,6 +108,15 @@ public class SocketConnectionModule extends ReactContextBaseJavaModule implement
         return "SocketConnection";
     }
 
+    // Required for rn built in EventEmitter Calls.
+    @ReactMethod
+    public void addListener(String eventName) {
+    }
+
+    @ReactMethod
+    public void removeListeners(Integer count) {
+    }
+
     @ReactMethod
     public void connect(String host, int port) {
         this.host = host;

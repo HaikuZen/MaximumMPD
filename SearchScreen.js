@@ -51,7 +51,7 @@ export default class SearchScreen extends React.Component {
 
     componentDidMount() {
         if (!MPDConnection.isConnected()) {
-            this.props.navigation.navigate('Settings');
+            //this.props.navigation.navigate('Settings');
             this.props.navigation.navigate('Connections');
         }
 
@@ -72,8 +72,8 @@ export default class SearchScreen extends React.Component {
     }
 
     componentWillUnmount() {
-        this.onConnect.remove();
-        this.onDisconnect.remove();
+        this.onConnect?.remove();
+        this.onDisconnect?.remove();
         if (this.onApperance) {
             this.onApperance.remove();
         }
@@ -88,14 +88,14 @@ export default class SearchScreen extends React.Component {
         }
         this.setState({searchValue: text});
         let artists = [], albums = [], songs = [], artistCheck = [], albumCheck = [];
-        if (text.length > 2) {
+        if (text.length > 5) {
             this.setState({loading: true});
             MPDConnection.current().search(text.toLowerCase(), 0, max)
             .then((results) => {
                 this.setState({loading: false});
                 results.forEach((result) => {
-                    let artist = {artist: result.artist, key: result.artist, traverse: true};
-                    let album = {album: result.album, key: result.album, artist: result.artist, traverse: true, date: result.date};
+                    let artist = {artist: result.artist, key: result.artist, traverse: true, date: result.date};
+                    let album = {album: result.album, key: result.album, artist: result.artist, traverse: true};
                     if (result.artist && !artistCheck.includes(result.artist) && artist.key.toLowerCase().indexOf(text.toLowerCase()) > -1) {
                         artists.push(artist);
                         artistCheck.push(result.artist);
@@ -305,7 +305,7 @@ export default class SearchScreen extends React.Component {
                                     <View style={styles.container7}>
                                         <View style={styles.paddingLeft}/>
                                         {item.imagePath === undefined &&
-                                            <MaterialCommunityIcon name="artist" size={20} style={common.icon}/>
+                                            <MaterialCommunityIcon name="account-music-outline" size={20} style={common.icon}/>
                                         }
                                         {item.imagePath !== undefined &&
                                             <Image style={styles.albumart} source={{uri: item.imagePath}}/>
@@ -313,7 +313,7 @@ export default class SearchScreen extends React.Component {
                                         <View style={common.container4}>
                                             {item.artist && <Text style={styles.item}>{item.artist}</Text>}
                                             {item.album && <Text style={styles.item}>{item.album}</Text>}
-                                            {item.date && <Text style={styles.item}>Date: {item.date}</Text>}
+                                            {item.date && <Text style={styles.item}>Date: {item.date}</Text>}                                            
                                         </View>
                                         <EntypoIcon name="dots-three-horizontal" size={20} style={common.icon}/>                    
                                     </View>

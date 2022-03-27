@@ -22,8 +22,9 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import FAIcon from 'react-native-vector-icons/FontAwesome';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import EntypoIcon from 'react-native-vector-icons/Entypo';
-import ActionButton from 'react-native-action-button';
-import { ActionSheetCustom as ActionSheet } from 'react-native-actionsheet';
+//import ActionButton from 'react-native-action-button';
+import { FloatingAction } from "react-native-floating-action";
+import ActionSheet from '@alessiocancian/react-native-actionsheet';
 
 import MPDConnection from './MPDConnection';
 import AlbumArt from './AlbumArt';
@@ -33,9 +34,9 @@ import { StyleManager } from './Styles';
 import Base64 from './Base64';
 
 export default class AlbumsScreen extends React.Component {
-    static navigationOptions = ({ navigation }) => {
-        const artist = navigation.getParam('artist');
-        const genre = navigation.getParam('genre');
+    static navigationOptions = ({ navigation, route }) => {
+        const artist = route.params?.artist
+        const genre = route.params?.genre
         let title;
         if (!artist) {
             title = "Albums ("+genre+")";
@@ -62,16 +63,19 @@ export default class AlbumsScreen extends React.Component {
         };
     }
 
-    componentDidMount() {
-        const { navigation } = this.props;
+    componentDidMount() {        
+        console.log('AlbumScreen>>>', this.props)
+        const { navigation } = this.props 
+               
         Config.getGridViewConfig()
         .then((gridViewConfig) => {
             if (gridViewConfig[0]) {
                 this.setState({grid: true, numColumns: gridViewConfig[1]});
             }
         });
-        const artist = navigation.getParam('artist');
-        const albums = navigation.getParam('albums');
+        const { artist, albums } = this.props.route.params
+        console.log('>>>',artist,albums)
+        
         if (artist) {
             this.setState({loading: true});
             Config.isSortAlbumsByDate()
@@ -145,10 +149,10 @@ export default class AlbumsScreen extends React.Component {
     }
 
     componentWillUnmount() {
-        this.onAlbumArtEnd.remove();
-        this.onAlbumArtError.remove();
-        this.onAlbumArtComplete.remove();
-        this.onDisconnect.remove();
+        this.onAlbumArtEnd?.remove();
+        this.onAlbumArtError?.remove();
+        this.onAlbumArtComplete?.remove();
+        this.onDisconnect?.remove();
         if (this.onApperance) {
             this.onApperance.remove();
         }
@@ -157,7 +161,7 @@ export default class AlbumsScreen extends React.Component {
     addAll(toPlaylist) {
         const { navigation } = this.props;
 
-        const artist = navigation.getParam('artist');
+        const artist = this.props.route.params?.artist
 
         if (toPlaylist) {
             this.setState({modalVisible: true, selectedItem: {}});
@@ -191,8 +195,9 @@ export default class AlbumsScreen extends React.Component {
     }
 
     onPress(item) {
+        console.log('AlbumScreen onPress>>>', this.props)
         const { navigation } = this.props;
-        let artist = navigation.getParam('artist');
+        let artist = this.props.route.params?.artist
         if (!artist) {
             artist = item.artist;
         }
@@ -328,8 +333,8 @@ export default class AlbumsScreen extends React.Component {
                 );
             });                
         } else {
-            const { navigation } = this.props;
-            const artist = navigation.getParam('artist');
+            
+            const artist = this.props.route.params?.artist
             this.state.albums.forEach((album) => {
                 this.setState({loading: true});
 
@@ -429,6 +434,36 @@ export default class AlbumsScreen extends React.Component {
 
     render() {
         const common = StyleManager.getStyles("styles");
+        const actions = [
+            {
+              text: "List View",
+              icon: <Icon name="ios-list" size={20} color="white"/>,
+              color:'#3498db',
+              name: "bt_list_view",
+              position: 1
+            },
+            {
+              text: "Grid View",
+              icon: <Icon name="ios-grid" size={20} color="white"/>,
+              color: '#9b59b6',
+              name: "bt_grid_view",
+              position: 2
+            },
+            {
+                text: "Add to Queue",
+                icon: <FAIcon name="plus-square" size={15} color="#e6e6e6" />,
+                color:'#3498db',
+                name: "bt_add_to_queue",
+                position: 3
+            },
+            {
+                text: "Add to Playlist",
+                icon: <FAIcon name="plus-square" size={15} color="#e6e6e6" />,
+                color: '#9b59b6',
+                name: "bt_add_to_playlist",
+                position: 4
+            }             
+          ];          
 
         return (
             <View style={common.container1}>
@@ -496,6 +531,24 @@ export default class AlbumsScreen extends React.Component {
                         }}
                     />
                 }
+                <FloatingAction
+                    actions={actions}
+                    color="rgba(231,76,60,1)" hideShadow={true}
+                    onPressItem={name => {
+                        if(name==="bt_list_view")
+                            this.setState({grid: false, numColumns: 1})
+                        if(name==="bt_grid_view")
+                            Config.getGridViewColumns()
+                            .then((numColumns) => {
+                                this.setState({grid: true, numColumns: numColumns});
+                            });
+                        if(name==="bt_add_to_queue")
+                            this.addAll(false)                            
+                        if(name==="bt_add_to_playlist")
+                            this.addAll(true)
+                    }}
+                />                    
+                {/* 
                 <ActionButton buttonColor="rgba(231,76,60,1)" hideShadow={true}>
                     <ActionButton.Item buttonColor='#3498db' title="List View" size={40} textStyle={common.actionButtonText} onPress={() => {this.setState({grid: false, numColumns: 1});}}>
                         <Icon name="ios-list" size={20} color="white"/>
@@ -516,7 +569,9 @@ export default class AlbumsScreen extends React.Component {
                         <FAIcon name="plus-square" size={15} color="#e6e6e6" />
                     </ActionButton.Item>
                 </ActionButton>
+                */}
             </View>
+            
         );
     }
 }

@@ -23,7 +23,8 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import FAIcon from 'react-native-vector-icons/FontAwesome';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 
-import ActionButton from 'react-native-action-button';
+//import ActionButton from 'react-native-action-button';
+import { FloatingAction } from "react-native-floating-action";
 
 import { SwipeListView, SwipeRow } from 'react-native-swipe-list-view';
 
@@ -34,10 +35,11 @@ import NewPlaylistModal from './NewPlaylistModal';
 import { StyleManager } from './Styles';
 
 export default class SongsScreen extends React.Component {
-    static navigationOptions = ({ navigation }) => {
-        let type = navigation.getParam('album');
+    static navigationOptions = ({ navigation, route }) => {
+        console.log('SongsScreen.navigationOptions>>>', route)
+        let type = route.params?.album
         if (!type) {
-            type = navigation.getParam('genre');
+            type = route.params?.genre
         }
         return {
             title: "Songs ("+type+")"
@@ -62,8 +64,9 @@ export default class SongsScreen extends React.Component {
     }
 
     componentDidMount() {
+        console.log('SongsScreen>>>', this.props)
         const { navigation } = this.props;
-        navigation.setParams({ sort: this.sort });
+        navigation.setOptions({ sort: this.sort });
         //this.load();
         this.onDisconnect = MPDConnection.getEventEmitter().addListener(
             "OnDisconnect",
@@ -81,22 +84,24 @@ export default class SongsScreen extends React.Component {
                 this.load();
             }
         );
+        this.load();
     }
 
     componentWillUnmount() {
-        this.onDisconnect.remove();
-        this.didFocusSubscription.remove();
+        this.onDisconnect?.remove();
+        this.didFocusSubscription?.remove();
         if (this.onApperance) {
             this.onApperance.remove();
         }
     }
 
     load() {
-        const { navigation } = this.props;
-        const artist = navigation.getParam('artist');
-        const album = navigation.getParam('album');
-        const genre = navigation.getParam('genre');
-        const hasNoAlbum = navigation.getParam('hasNoAlbum');
+        //const { navigation } = this.props;
+        console.log('load>>>', this.props.route.params)
+        const artist = this.props.route.params?.artist
+        const album = this.props.route.params?.album
+        const genre = this.props.route.params?.genre
+        const hasNoAlbum = this.props.route.params?.hasNoAlbum
 
         this.setState({loading: true});
 
@@ -159,12 +164,11 @@ export default class SongsScreen extends React.Component {
         }
     }
 
-    addAll(toPlaylist) {
-        const { navigation } = this.props;
-        const artist = navigation.getParam('artist');
-        const album = navigation.getParam('album');
-        const genre = navigation.getParam('genre');
-        const hasNoAlbum = navigation.getParam('hasNoAlbum');
+    addAll(toPlaylist) {        
+        const artist = this.props.route.params?.artist
+        const album = this.props.route.params?.album
+        const genre = this.props.route.params?.genre
+        const hasNoAlbum = this.props.route.params?.hasNoAlbum
 
         if (toPlaylist === true) {
             this.setState({modalVisible: true, selectedItem: "all"});
@@ -255,12 +259,11 @@ export default class SongsScreen extends React.Component {
 
         this.setState({loading: true});
 
-        if (selectedItem === "all") {
-            const { navigation } = this.props;
-            const artist = navigation.getParam('artist');
-            const album = navigation.getParam('album');
-            const genre = navigation.getParam('genre');
-            const hasNoAlbum = navigation.getParam('hasNoAlbum');
+        if (selectedItem === "all") {            
+            const artist = this.props.route.params?.artist
+            const album = this.props.route.params?.album
+            const genre = this.props.route.params?.genre
+            const hasNoAlbum = this.props.route.params?.hasNoAlbum
 
             if (hasNoAlbum) {
                 let songs = [];
@@ -319,11 +322,11 @@ export default class SongsScreen extends React.Component {
     }
 
     autoPlay() {
-        const { navigation } = this.props;
-        const artist = navigation.getParam('artist');
-        const album = navigation.getParam('album');
-        const genre = navigation.getParam('genre');
-        const hasNoAlbum = navigation.getParam('hasNoAlbum');
+        
+        const artist = this.props.route.params?.artist
+        const album = this.props.route.params?.album
+        const genre = this.props.route.params?.genre
+        const hasNoAlbum = this.props.route.params?.hasNoAlbum
 
         if (hasNoAlbum) {
             this.setState({loading: true});
@@ -411,6 +414,30 @@ export default class SongsScreen extends React.Component {
     render() {
         const styles = StyleManager.getStyles("songsStyles");
         const common = StyleManager.getStyles("styles");
+        const actions = [
+            {
+              text: "Play Now",
+              icon: <FAIcon name="play" size={15} color="#e6e6e6" />,
+              color: '#1abc9c',
+              name: "bt_play_now",
+              position: 1
+            },
+            {
+              text: "All to Queue",
+              icon: <FAIcon name="plus-square" size={15} color="#e6e6e6" />,
+              color: '#3498db',
+              name: "bt_all_to_queue",
+              position: 2
+            },
+            {
+              text: "All to Playlist",
+              icon: <FAIcon name="plus-square" size={15} color="#e6e6e6" />,
+              color: '#9b59b6',
+              name: "bt_all_to_playlist",
+              position: 3
+            }
+          ];        
+
         return (
             <View style={common.container1}>
                 <View style={common.container2}>
@@ -499,7 +526,20 @@ export default class SongsScreen extends React.Component {
                     </View>
                 }
                 <NewPlaylistModal visible={this.state.modalVisible} selectedItem={this.state.selectedItem} onSet={(name, selectedItem) => {this.finishAdd(name, selectedItem);}} onCancel={() => this.setState({modalVisible: false})}></NewPlaylistModal>
+                <FloatingAction
+                    actions={actions}
+                    color="rgba(231,76,60,1)" hideShadow={true}
+                    onPressItem={name => {
+                        if(name==="bt_play_now")
+                            this.autoPlay()
+                        if(name==="bt_all_to_queue")
+                            this.addAll(false)
+                        if(name==="bt_all_to_playlist")
+                            this.addAll(true)
 
+                    }}
+                />
+                {/* 
                 <ActionButton buttonColor="rgba(231,76,60,1)" hideShadow={true}>
                     <ActionButton.Item buttonColor='#1abc9c' title="Play Now" size={40} textStyle={common.actionButtonText} onPress={() => {this.autoPlay();}}>
                         <FAIcon name="play" size={15} color="#e6e6e6" />
@@ -511,6 +551,7 @@ export default class SongsScreen extends React.Component {
                         <FAIcon name="plus-square" size={15} color="#e6e6e6" />
                     </ActionButton.Item>
                 </ActionButton>
+                */}
             </View>
         );
     }

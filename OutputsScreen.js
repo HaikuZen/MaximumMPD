@@ -56,8 +56,8 @@ export default class OutputsScreen extends React.Component {
     }
 
     componentWillUnmount() {
-        this.onConnect.remove();
-        this.onDisconnect.remove();
+        this.onConnect?.remove();
+        this.onDisconnect?.remove();
         if (this.onApperance) {
             this.onApperance.remove();
         }

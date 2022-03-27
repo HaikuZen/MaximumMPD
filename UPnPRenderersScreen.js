@@ -26,7 +26,8 @@ import UPnPManager from './UPnPManager';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { SwipeListView, SwipeRow } from 'react-native-swipe-list-view';
 import { StyleManager } from './Styles';
-import ActionButton from 'react-native-action-button';
+//import ActionButton from 'react-native-action-button';
+import { FloatingAction } from "react-native-floating-action";
 import IonIcon  from 'react-native-vector-icons/Ionicons';
 
 export default class ConnectionsScreen extends React.Component {
@@ -37,7 +38,7 @@ export default class ConnectionsScreen extends React.Component {
 
     state = {
         upnpRenderers: [],
-        selected: (new Map(): Map<string, boolean>),
+        selected: (new Map()),
         loading: false
     }
 
@@ -59,7 +60,7 @@ export default class ConnectionsScreen extends React.Component {
     }
 
     componentWillUnmount() {
-        this.onUPnPRendererDiscover.remove();
+        this.onUPnPRendererDiscover?.remove();
     }
 
     load() {
@@ -92,6 +93,15 @@ export default class ConnectionsScreen extends React.Component {
         const common = StyleManager.getStyles("styles");
 
         const navigation = this.props.navigation;
+        const actions = [
+            {
+              text: "Rescan",
+              icon: <IonIcon name="ios-refresh" size={20} color="white"/>,
+              color: '#1abc9c',
+              name: "bt_rescan",
+              position: 1
+            }
+          ];        
         return (
             <View style={common.container1}>
                 <SwipeListView
@@ -126,12 +136,21 @@ export default class ConnectionsScreen extends React.Component {
                         <ActivityIndicator size="large" color="#0000ff"/>
                     </View>
                 }
-
+                <FloatingAction
+                    actions={actions}
+                    color="rgba(231,76,60,1)" hideShadow={true}
+                    onPressItem={name => {
+                        if(name==="bt_rescan")
+                            this.onRescan()
+                    }}
+                />                
+                {/* 
                 <ActionButton buttonColor="rgba(231,76,60,1)" hideShadow={true}>
                     <ActionButton.Item buttonColor='#1abc9c' title="Rescan" size={40} textStyle={common.actionButtonText} onPress={() => {this.onRescan();}}>
                         <IonIcon name="ios-refresh" size={20} color="white"/>
                     </ActionButton.Item>
                 </ActionButton>
+                */}
             </View>
         );
     }

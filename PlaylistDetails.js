@@ -21,16 +21,17 @@ import { SearchBar } from "react-native-elements";
 import Icon from 'react-native-vector-icons/Ionicons';
 import FAIcon from 'react-native-vector-icons/FontAwesome';
 import EntypoIcon from 'react-native-vector-icons/Entypo';
-import ActionButton from 'react-native-action-button';
-import { ActionSheetCustom as ActionSheet } from 'react-native-actionsheet';
+//import ActionButton from 'react-native-action-button';
+import { FloatingAction } from "react-native-floating-action";
+import ActionSheet from '@alessiocancian/react-native-actionsheet';
 
 import MPDConnection from './MPDConnection';
 import { StyleManager } from './Styles';
 
 export default class PlaylistDetails extends React.Component {
-    static navigationOptions = ({ navigation }) => {
+    static navigationOptions = ({ navigation, route }) => {
         return {
-            title: navigation.getParam('playlist')
+            title: route.params?.playlist
         };
     };
 
@@ -45,9 +46,13 @@ export default class PlaylistDetails extends React.Component {
     }
 
     componentDidMount() {
-        const { navigation } = this.props;
-        this.playlistName = navigation.getParam('playlist');
-        const isNew = navigation.getParam('isNew');
+        console.log('PlaylistDetails>>>', this.props)
+        const { navigation } = this.props //!==undefined ? this.props.navigation : undefined;
+       
+        this.navigateOnConnect = navigation!==undefined ? navigation.navigateOnConnect || true : true;        
+        
+        this.playlistName = navigation!==undefined ? navigation.playlist || undefined : undefined
+        const isNew =  navigation!==undefined ? navigation.isNew || undefined : undefined 
         //if (!isNew) {
         //    this.load();
         //}
@@ -65,7 +70,7 @@ export default class PlaylistDetails extends React.Component {
     }
 
     componentWillUnmount() {
-        this.didFocusSubscription.remove();
+        this.didFocusSubscription?.remove();
         if (this.onApperance) {
             this.onApperance.remove();
         }
@@ -276,6 +281,30 @@ export default class PlaylistDetails extends React.Component {
     render() {
         const styles = StyleManager.getStyles("playlistDetailsStyles");
         const common = StyleManager.getStyles("styles");
+        const actions = [
+            {
+              text: "Paly Now",
+              icon:<FAIcon name="play" size={15} color="#e6e6e6" />,
+              color: '#1abc9c',
+              name: "bt_play",
+              position: 1
+            },
+            {
+              text: "Queue",
+              icon: <Icon name="ios-checkmark" size={30} color="#e6e6e6" />,
+              name: "bt_queue",
+              color: '#3498db',
+              position: 2
+            },
+            {
+              text: "Delete",
+              icon:  <Icon name="ios-trash" size={23} color="#e6e6e6" />,
+              name: "bt_delete",
+              color: '#1abc9c',
+              position: 3
+            }
+          ];        
+
         return (
             <View style={common.container1}>
                 <View style={common.container2}>
@@ -324,6 +353,20 @@ export default class PlaylistDetails extends React.Component {
                         }}
                     />
                 }
+                <FloatingAction
+                    actions={actions}
+                    color="rgba(231,76,60,1)" hideShadow={true}
+                    onPressItem={name => {
+                        if(name==="bt_play")
+                            this.onLoad(true)
+                        if(name==="bt_queue")
+                            this.onLoad()
+                        if(name==="bt_delete")
+                            this.onDelete()
+
+                    }}
+                />
+                {/*
                 <ActionButton buttonColor="rgba(231,76,60,1)" hideShadow={true}>
                     <ActionButton.Item buttonColor='#1abc9c' title="Play Now" size={40} textStyle={common.actionButtonText} onPress={() => {this.onLoad(true);}}>
                         <FAIcon name="play" size={15} color="#e6e6e6" />
@@ -335,6 +378,7 @@ export default class PlaylistDetails extends React.Component {
                         <Icon name="ios-trash" size={23} color="#e6e6e6" />
                     </ActionButton.Item>
                 </ActionButton>
+                 */}
             </View>
         );
     }

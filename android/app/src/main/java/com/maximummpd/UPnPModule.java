@@ -42,6 +42,14 @@ public class UPnPModule extends ReactContextBaseJavaModule implements ControlPoi
         servers = new HashMap<String, Device>();
         renderers = new HashMap<String, Device>();
     }
+    // Required for rn built in EventEmitter Calls.
+    @ReactMethod
+    public void addListener(String eventName) {
+    }
+
+    @ReactMethod
+    public void removeListeners(Integer count) {
+    }
 
     @Override
     public String getName() {

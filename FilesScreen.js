@@ -21,11 +21,12 @@ import { SearchBar } from "react-native-elements";
 import Icon from 'react-native-vector-icons/Ionicons';
 import FAIcon from 'react-native-vector-icons/FontAwesome';
 import EntypoIcon from 'react-native-vector-icons/Entypo';
-import { HeaderBackButton } from 'react-navigation-stack';
+import { HeaderBackButton } from '@react-navigation/native-stack';
 import { Button } from 'react-native-elements'
-import ActionButton from 'react-native-action-button';
+//import ActionButton from 'react-native-action-button';
+import { FloatingAction } from "react-native-floating-action";
 import { SwipeListView, SwipeRow } from 'react-native-swipe-list-view';
-import { ActionSheetCustom as ActionSheet } from 'react-native-actionsheet';
+import ActionSheet from '@alessiocancian/react-native-actionsheet';
 
 import MPDConnection from './MPDConnection';
 import Base64 from './Base64';
@@ -34,13 +35,13 @@ import { StyleManager } from './Styles';
 import Config from './Config';
 
 export default class FilesScreen extends React.Component {
-    static navigationOptions = ({ navigation }) => {
-        const showBackbutton = navigation.getParam('showBackbutton', false);
+    static navigationOptions = ({ navigation, route }) => {
+        const showBackbutton = route.params?.showBackbutton || false
         let ret = {
             title: 'Files'
         }
         if (showBackbutton) {
-            ret.headerLeft = () => (<HeaderBackButton onPress={navigation.getParam('backlinkHandler')}/> )
+            ret.headerLeft = () => (<HeaderBackButton onPress={route.params?.backlinkHandler}/> )
         }
         return ret;
     };
@@ -60,13 +61,14 @@ export default class FilesScreen extends React.Component {
     }
 
     componentDidMount() {
+        console.log('FilesScreen>>>')
         if (!MPDConnection.isConnected()) {
-            this.props.navigation.navigate('Settings');
+            //this.props.navigation.navigate('Settings');
             this.props.navigation.navigate('Connections');
         }
-
-        this.props.navigation.setParams({ backlinkHandler: this.backlinkHandler });
-        this.props.navigation.setParams({ sort: this.sort });
+        this.load()
+        this.props.navigation.setOptions({ backlinkHandler: this.backlinkHandler });
+        this.props.navigation.setOptions({ sort: this.sort });
 
         this.onConnect = MPDConnection.getEventEmitter().addListener(
             "OnConnect",
@@ -106,10 +108,10 @@ export default class FilesScreen extends React.Component {
     }
 
     componentWillUnmount() {
-        this.onConnect.remove();
-        this.onDisconnect.remove();
-        this.didBlurSubscription.remove();
-        this.didFocusSubscription.remove();
+        this.onConnect?.remove();
+        this.onDisconnect?.remove();
+        this.didBlurSubscription?.remove();
+        this.didFocusSubscription?.remove();
         if (this.onApperance) {
             this.onApperance.remove();
         }
@@ -216,6 +218,7 @@ export default class FilesScreen extends React.Component {
 
     load(uri, pushDir) {
         let path = "";
+        console.log('uri>>>', uri)
 		if (uri) {
 			path += Base64.atob(uri);
 		}
@@ -238,9 +241,9 @@ export default class FilesScreen extends React.Component {
                     this.state.dirs.push(uri);                
                 }
                 if (this.state.dirs.length < 1) {
-                    this.props.navigation.setParams({ showBackbutton: false });
+                    this.props.navigation.setOptions({ showBackbutton: false });
                 } else {
-                    this.props.navigation.setParams({ showBackbutton: true });
+                    this.props.navigation.setOptions({ showBackbutton: true });
                 }
             })
             .catch((err) => {
@@ -411,6 +414,29 @@ export default class FilesScreen extends React.Component {
                 dirCount++;
             }
         });
+        const actions = [
+            {
+              text: "Play Now",
+              icon: <FAIcon name="play" size={15} color="#e6e6e6" />,
+              color: '#1abc9c',
+              name: "bt_play_now",
+              position: 1
+            },
+            {
+              text: "Add to Queue",
+              icon: <FAIcon name="plus-square" size={15} color="#e6e6e6" />,
+              color: '#3498db',
+              name: "bt_add_to_queue",
+              position: 2
+            },
+            {
+              text: "Add to Playlist",
+              icon: <FAIcon name="plus-square" size={15} color="#e6e6e6" />,
+              color: '#9b59b6',
+              name: "bt_add_to_playlist",
+              position: 3
+            }
+          ];        
 
         return (
             <View style={common.container1}>
@@ -519,7 +545,24 @@ export default class FilesScreen extends React.Component {
                         }}
                     />
                 }
-                {showAddAll && <ActionButton buttonColor="rgba(231,76,60,1)" hideShadow={true}>
+                {showAddAll && 
+                    <FloatingAction
+                        actions={actions}
+                        color="rgba(231,76,60,1)" hideShadow={true}
+                        onPressItem={name => {
+                            if(name==="bt_play_now")
+                                this.autoPlay()
+                            if(name==="bt_add_to_queue")
+                                this.addAll(false)
+                            if(name==="bt_add_to_playlist")
+                                this.addAll(true)
+
+                        }}
+                    />
+                }
+                               
+                {/* 
+                    <ActionButton buttonColor="rgba(231,76,60,1)" hideShadow={true}>
                     <ActionButton.Item buttonColor='#1abc9c' title="Play Now" size={40} textStyle={common.actionButtonText} onPress={() => {this.autoPlay();}}>
                         <FAIcon name="play" size={15} color="#e6e6e6" />
                     </ActionButton.Item>
@@ -529,7 +572,8 @@ export default class FilesScreen extends React.Component {
                     <ActionButton.Item buttonColor='#9b59b6' title="Add to Playlist" size={40} textStyle={common.actionButtonText} onPress={() => {this.addAll(true);}}>
                         <FAIcon name="plus-square" size={15} color="#e6e6e6" />
                     </ActionButton.Item>
-                </ActionButton>}
+                </ActionButton>
+                */} 
             </View>
         );
     }

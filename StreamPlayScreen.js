@@ -23,7 +23,8 @@ import IonIcon from 'react-native-vector-icons/Ionicons';
 import EntypoIcon from 'react-native-vector-icons/Entypo';
 
 import { StyleManager } from './Styles';
-import ActionButton from 'react-native-action-button';
+//import ActionButton from 'react-native-action-button';
+import { FloatingAction } from "react-native-floating-action";
 
 import AudioStreamManager from './AudioStreamManager';
 
@@ -92,8 +93,8 @@ export default class StreamPlayScreen extends React.Component {
     }
 
     componentWillUnmount() {
-        this.subscription.remove();
-        this.didFocusSubscription.remove();
+        this.subscription?.remove();
+        this.didFocusSubscription?.remove();
     }
 
     load() {
@@ -369,6 +370,29 @@ export default class StreamPlayScreen extends React.Component {
                 </View>
             );
         } else if (this.state.selectedTab === 1) {
+            const actions = [
+                {
+                  text: "Clear Queue",
+                  icon: <Icon name="eraser" size={15} color="#e6e6e6" />,
+                  color: '#1abc9c',
+                  name: "bt_clear_queue",
+                  position: 1
+                },
+                {
+                  text: "Play/Pause",
+                  icon: <Icon name={playPauseIcon} size={15} color="#e6e6e6" />,
+                  color: '#1abc9c',
+                  name: "bt_play_pause",
+                  position: 2
+                },
+                {
+                  text: "Next",
+                  icon: <Icon name="fast-forward" size={15} color="#e6e6e6" />,
+                  color: '#9b59b6',
+                  name: "bt_next",
+                  position: 3
+                }
+              ];            
             return (
                 <View style={styles.tabcontainer1}>
                     <View style={{flex: bg, width: "100%", alignItems: 'stretch', justifyContent: 'center', padding: 5}}>
@@ -407,6 +431,21 @@ export default class StreamPlayScreen extends React.Component {
                                 <ActivityIndicator size="large" color="#0000ff"/>
                             </View>
                         }
+                        <FloatingAction
+                            actions={actions}
+                            color="rgba(231,76,60,1)" hideShadow={true}
+                            onPressItem={name => {
+                                if(name==="bt_clear_queue")
+                                    this.onClear.bind(this)
+                                if(name==="bt_play_pause")
+                                    this.onPlayPause.bind(this)
+                                if(name==="bt_next")
+                                    this.onNext.bind(this)
+
+                            }}
+                        />
+
+                        {/* 
                         <ActionButton buttonColor="rgba(231,76,60,1)" hideShadow={true}>
                             <ActionButton.Item size={actionButtonSize} buttonColor='#1abc9c' title="Clear Queue" textStyle={common.actionButtonText} onPress={this.onClear.bind(this)}>
                                 <Icon name="eraser" size={15} color="#e6e6e6" />
@@ -418,6 +457,7 @@ export default class StreamPlayScreen extends React.Component {
                                 <Icon name="fast-forward" size={15} color="#e6e6e6" />
                             </ActionButton.Item>
                         </ActionButton>
+                        */}
                     </View>
                 </View>
             );

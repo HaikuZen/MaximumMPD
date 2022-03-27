@@ -40,6 +40,15 @@ public class BonjourListenerModule extends ReactContextBaseJavaModule {
         return "BonjourListener";
     }
 
+    // Required for rn built in EventEmitter Calls.
+    @ReactMethod
+    public void addListener(String eventName) {
+    }
+
+    @ReactMethod
+    public void removeListeners(Integer count) {
+    }
+    
     @ReactMethod
     public void listen(String type, String domain) {
         discoveryListener = new NsdManager.DiscoveryListener() {

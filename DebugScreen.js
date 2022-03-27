@@ -17,7 +17,8 @@
 
 import React from 'react';
 import { View, Text, TextInput, FlatList, Alert, ActivityIndicator, Appearance } from 'react-native';
-import ActionButton from 'react-native-action-button';
+//import ActionButton from 'react-native-action-button';
+import { FloatingAction } from "react-native-floating-action";
 import FAIcon from 'react-native-vector-icons/FontAwesome';
 
 import MPDConnection from './MPDConnection';
@@ -31,7 +32,7 @@ export default class DebugScreen extends React.Component {
     state = {
         debug: [],
         cmd: "",
-        laoding: false
+        loading: false
     }
 
     componentDidMount() {
@@ -54,8 +55,8 @@ export default class DebugScreen extends React.Component {
     }
 
     componentWillUnmount() {
-        this.onConnect.remove();
-        this.onDisconnect.remove();
+        this.onConnect?.remove();
+        this.onDisconnect?.remove();
         if (this.onApperance) {
             this.onApperance.remove();
         }
@@ -118,6 +119,22 @@ export default class DebugScreen extends React.Component {
     render() {
         const styles = StyleManager.getStyles("debugStyles");
         const common = StyleManager.getStyles("styles");
+        const actions = [
+            {
+              text: "Run",
+              icon: <FAIcon name="plus-square" size={15} color="#e6e6e6" />,
+              color: '#3498db',
+              name: "bt_run",
+              position: 1
+            },
+            {
+              text: "Clear",
+              icon: <FAIcon name="eraser" size={15} color="#e6e6e6" />,
+              color: '#1abc9c',
+              name: "bt_clear",
+              position: 2
+            }
+          ];        
         return (
             <View style={common.container1}>
                 <View style={styles.container3}>
@@ -145,6 +162,17 @@ export default class DebugScreen extends React.Component {
                         <ActivityIndicator size="large" color="#0000ff"/>
                     </View>
                 }
+                <FloatingAction
+                    actions={actions}
+                    color="rgba(231,76,60,1)" hideShadow={true}
+                    onPressItem={name => {
+                        if(name==="bt_run")
+                            this.onRun()
+                        if(name==="bt_clear")
+                            this.onClear()
+                    }}
+                />                
+                {/* 
                 <ActionButton buttonColor="rgba(231,76,60,1)" hideShadow={true}>
                     <ActionButton.Item buttonColor='#3498db' title="Run" size={40} textStyle={common.actionButtonText} onPress={() => {this.onRun();}}>
                         <FAIcon name="plus-square" size={15} color="#e6e6e6" />
@@ -153,6 +181,7 @@ export default class DebugScreen extends React.Component {
                         <FAIcon name="eraser" size={15} color="#e6e6e6" />
                     </ActionButton.Item>
                 </ActionButton>
+                */}
             </View>
         );
     }

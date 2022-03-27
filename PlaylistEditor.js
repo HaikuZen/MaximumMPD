@@ -21,7 +21,8 @@ import { SearchBar, Input, Button } from "react-native-elements";
 import Icon from 'react-native-vector-icons/Ionicons';
 import FAIcon from 'react-native-vector-icons/FontAwesome';
 import EntypoIcon from 'react-native-vector-icons/Entypo';
-import ActionButton from 'react-native-action-button';
+//import ActionButton from 'react-native-action-button';
+import { FloatingAction } from "react-native-floating-action";
 
 import MPDConnection from './MPDConnection';
 import NewPlaylistModal from './NewPlaylistModal';
@@ -117,7 +118,7 @@ export default class PlaylistEditor extends React.Component {
     }
 
     componentWillUnmount() {
-        this.didFocusSubscription.remove();
+        this.didFocusSubscription?.remove();
     }
 
     load() {
@@ -248,6 +249,22 @@ export default class PlaylistEditor extends React.Component {
     render() {
         const styles = StyleManager.getStyles("playlistEditorStyles");
         const common = StyleManager.getStyles("styles");
+        const actions = [
+            {
+              text: "Add Stream URL",
+              icon: <FAIcon name="plus-square" size={15} color="#e6e6e6" />,
+              color: '#1abc9c',
+              name: "bt_add_stream_url",
+              position: 1
+            },
+            {
+              text: "Playlist from Queue",
+              icon: <FAIcon name="plus-square" size={15} color="#e6e6e6" />,
+              color: '#9b59b6',
+              name: "bt_playlist_from_queue",
+              position: 2
+            }
+        ];          
         return (
             <View style={common.container1}>
                 <View style={common.container2}>
@@ -288,6 +305,17 @@ export default class PlaylistEditor extends React.Component {
                 }
                 <NewPlaylistModal visible={this.state.modalVisible} onSet={(name) => {this.createNewPlaylist(name)}} onCancel={() => this.setState({modalVisible: false})}></NewPlaylistModal>
                 <AddStreamURLModal visible={this.state.addStreamURLVisible} onSet={(name, url) => {this.addStreamURL(name, url)}} onCancel={() => this.setState({addStreamURLVisible: false})}></AddStreamURLModal>
+                <FloatingAction
+                    actions={actions}
+                    color="rgba(231,76,60,1)" hideShadow={true}
+                    onPressItem={name => {
+                        if(name==="bt_add_stream_url")
+                            this.setState({addStreamURLVisible: true})
+                        if(name==="bt_playlist_from_queue")
+                            this.fromQueue()
+                    }}
+                />
+                {/*                
                 <ActionButton buttonColor="rgba(231,76,60,1)" hideShadow={true}>
                     <ActionButton.Item buttonColor='#1abc9c' title="Add Stream URL" size={40} textStyle={common.actionButtonText} onPress={() => {this.setState({addStreamURLVisible: true});}}>
                         <FAIcon name="plus-square" size={15} color="#e6e6e6" />
@@ -296,6 +324,7 @@ export default class PlaylistEditor extends React.Component {
                         <FAIcon name="plus-square" size={15} color="#e6e6e6" />
                     </ActionButton.Item>
                 </ActionButton>
+                 */}                
             </View>
         );
     }

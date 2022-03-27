@@ -26,6 +26,7 @@ export default class WelcomeScreen extends React.Component {
     }
 
     componentDidMount() {
+        console.log('WelcomeScreen>>>', this.props);
         this.onApperance = Appearance.addChangeListener(({ colorScheme }) => {
             this.setState({loading: this.state.loading});
         });
@@ -47,7 +48,7 @@ export default class WelcomeScreen extends React.Component {
                     <Text style={styles.intro}>Connect by swiping left on either a Discovered or Configured MPD server.
                     Use the bottom right button to add a new Server</Text>
                 </View>
-                <ConnectionsScreen navigation={this.props.navigation}/>
+                <ConnectionsScreen {...this.props}/>
             </View>
         );
     }
